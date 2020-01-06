@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodle-d
+  labels:
+    app: moodle-d
+spec:
+  selector:
+    matchLabels:
+      app: moodle-d
+      tier: frontend
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: moodle-d
+        tier: frontend
+    spec:
+      containers:
+      - image: giusepedias/docker-moodle_moodleapp1:v1.0.0
+        name: moodle-d
+      #resources:
+        #requests:
+          #memory: "1Gi"
+          #cpu: "500m"
+        #limits:
+          #memory: "1Gi"
+          #cpu: "500m"
+        env:
+        - name: DB_TYPE
+          value: mysql
+        ports:
+        - containerPort: 80
+          name: moodle-d
+        volumeMounts:
+        - mountPath: /etc/apache2/sites-enabled
+          readOnly: true
+          name: moodle-d-local-vhost
+      volumes:
+      - name: moodle-d-local-vhost
+        configMap:
+          name: apache-conf
+          items:
+          - key: 000-default.conf
+            path: 000-default.conf
+      - name: moodle-d-local-app
+        persistentVolumeClaim:
+          claimName: moodle-d-lv-claim 
